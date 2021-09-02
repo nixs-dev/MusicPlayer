@@ -23,6 +23,7 @@ class Ui_MainWindow(object):
     currentSound = None
     soundProgress = None
     barIsSelected = False
+    paused = False
     repeat = False
     songs = []
 
@@ -62,13 +63,18 @@ class Ui_MainWindow(object):
     def configPlayer(self):
         self.soundProgress = ProgressBar()
         self.soundProgress.player = self.currentSound.player
+        self.soundProgress.mode = 'repeat' if self.repeat else 'toNext'
         self.soundProgress.threadSignal.connect(self.updateProgressBar)
         self.soundProgress.setDurationSignal.connect(self.soundReady)
         self.soundProgress.finishedSignal.connect(self.songFinished)
         self.soundProgress.start()
         self.soundProgress.exec()
 
-    def play(self):
+    def start(self):
+        self.currentSound.play(self.currentSound)
+        self.pushButton.setText(self.playOrPausedIcon[0])
+
+    def pauseOrPlay(self):
         if self.currentSound.player.state() == QMediaPlayer.PlayingState:
             self.currentSound.pause(self.currentSound)
             self.pushButton.setText(self.playOrPausedIcon[1])
@@ -82,6 +88,7 @@ class Ui_MainWindow(object):
         self.horizontalSlider.setValue(0)
         self.currentSound.stop(self.currentSound)
 
+        print(typeFinish)
         if typeFinish == 'toNext':
             self.nextSong(self.songs.index(self.selected_song))
         elif typeFinish == 'repeat':
@@ -103,7 +110,7 @@ class Ui_MainWindow(object):
         self.label.setText(self.selected_song)
         self.horizontalSlider.setValue(0)
 
-        self.play()
+        self.start()
 
     def soundUnReady(self):
         self.pushButton.setEnabled(False)
@@ -188,7 +195,7 @@ class Ui_MainWindow(object):
         self.pushButton.setFont(font)
         self.pushButton.setStyleSheet("border: 1px solid;\n"
 "border-radius: 10px;")
-        self.pushButton.clicked.connect(self.play)
+        self.pushButton.clicked.connect(self.pauseOrPlay)
         self.pushButton.setObjectName("pushButton")
         self.label = QtWidgets.QLabel(self.widget)
         self.label.setGeometry(QtCore.QRect(10, 40, 531, 51))
