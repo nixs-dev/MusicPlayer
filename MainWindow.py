@@ -19,6 +19,7 @@ import threading
 
 class Ui_MainWindow(object):
     playOrPausedIcon = ['||', '►']
+    onBackground = False
     selected_song = ''
     currentSound = None
     soundProgress = None
@@ -155,10 +156,20 @@ class Ui_MainWindow(object):
     def onLeaveBar(self):
         self.barIsSelected = False
 
+    def closeEvent(self, _close_, event):
+        if not _close_:
+            self.window.hide()
+            event.ignore()
+        else:
+            event.accept()
+
     def setupUi(self, MainWindow):
+        self.window = MainWindow
+
         MainWindow.setObjectName("MainWindow")
         MainWindow.resize(1024, 700)
         MainWindow.setFixedSize(1024, 700)
+        MainWindow.closeEvent = partial(self.closeEvent, False)
         self.centralwidget = QtWidgets.QWidget(MainWindow)
         self.centralwidget.setObjectName("centralwidget")
         self.scrollArea = QtWidgets.QScrollArea(self.centralwidget)
@@ -234,7 +245,6 @@ class Ui_MainWindow(object):
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
         self.songs = tools.getSongs()
-
         self.showSongs() 
 
     def retranslateUi(self, MainWindow):
