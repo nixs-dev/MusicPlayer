@@ -199,7 +199,7 @@ class Ui_MainWindow(object):
         self.scrollArea.setWidget(self.scrollAreaWidgetContents)
         self.widget = QtWidgets.QWidget(self.centralwidget)
         self.widget.setGeometry(QtCore.QRect(290, 330, 561, 271))
-        self.widget.setStyleSheet("background-color: #FFFFFF; border: 4px ridge black")
+        self.widget.setStyleSheet("background-color: #FFFFFF; border: 4px ridge black; border-radius: 10px")
         self.widget.setObjectName("widget")
         self.label_2 = QtWidgets.QLabel(self.widget)
         self.label_2.setGeometry(QtCore.QRect(510, 110, 31, 16))
