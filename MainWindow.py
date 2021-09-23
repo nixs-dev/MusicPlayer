@@ -42,9 +42,17 @@ class Ui_MainWindow(object):
         try:
             _next = self.songs[actualSongIndex + 1]
         except:
-            return
+            _next = self.songs[0]
 
         self.selected_item(_next, None)
+
+    def previousSong(self, actualSongIndex):
+        try:
+            _previous = self.songs[actualSongIndex - 1]
+        except:
+            _previous = self.songs[len(self.songs)-1]
+
+        self.selected_item(_previous, None)
 
     def selected_item(self, text, event):
         self.selected_song = text

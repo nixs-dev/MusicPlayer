@@ -26,6 +26,6 @@ ui = Ui_MainWindow()
 ui.setupUi(MainWindow)
 MainWindow.show()
 
-TraySystem(MainWindow, app).show()
+TraySystem(MainWindow, ui, app).show()
 
 sys.exit(app.exec())
