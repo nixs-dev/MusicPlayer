@@ -30,13 +30,13 @@ class Ui_MainWindow(object):
 
     def showSongs(self):
         for song in self.songs:
-            label = QtWidgets.QLabel(song)
-            label.mousePressEvent = partial(self.selected_item, song)
-            label.enterEvent = partial(self.onMouseOver, "song", label)
-            label.leaveEvent = partial(self.onMouseLeave, "song", label)
-            label.setStyleSheet("margin-left: 4px; border: none; color: #000000")
-            label.setCursor(QtCore.Qt.PointingHandCursor)
-            self.verticalLayout.addWidget(label)
+            musicName = QtWidgets.QLabel(song)
+            musicName.mousePressEvent = partial(self.selected_item, song)
+            musicName.enterEvent = partial(self.onMouseOver, "song", musicName)
+            musicName.leaveEvent = partial(self.onMouseLeave, "song", musicName)
+            musicName.setStyleSheet("margin-left: 4px; border: none; color: #000000")
+            musicName.setCursor(QtCore.Qt.PointingHandCursor)
+            self.verticalLayout.addWidget(musicName)
 
     def nextSong(self, actualSongIndex):
         try:
@@ -81,18 +81,18 @@ class Ui_MainWindow(object):
 
     def start(self):
         self.currentSound.play(self.currentSound)
-        self.pushButton.setText(self.playOrPausedIcon[0])
+        self.playSongButton.setText(self.playOrPausedIcon[0])
 
     def pauseOrPlay(self):
         if self.currentSound.player.state() == QMediaPlayer.PlayingState:
             self.currentSound.pause(self.currentSound)
-            self.pushButton.setText(self.playOrPausedIcon[1])
+            self.playSongButton.setText(self.playOrPausedIcon[1])
         else:
             self.currentSound.play(self.currentSound)
-            self.pushButton.setText(self.playOrPausedIcon[0])
+            self.playSongButton.setText(self.playOrPausedIcon[0])
 
     def songFinished(self, typeFinish):
-        self.pushButton.setText(self.playOrPausedIcon[1])
+        self.playSongButton.setText(self.playOrPausedIcon[1])
         self.currentSound.player.setPosition(0)
         self.horizontalSlider.setValue(0)
         self.currentSound.stop(self.currentSound)
@@ -108,29 +108,29 @@ class Ui_MainWindow(object):
             self.horizontalSlider.setValue(value)
 
     def soundReady(self, _time):
-        self.pushButton.setEnabled(True)
+        self.playSongButton.setEnabled(True)
         self.horizontalSlider.setEnabled(True)
         self.loopIcon.setEnabled(True)
 
-        self.label_2.setText(tools.numberToTime(_time))
+        self.musicDuration.setText(tools.numberToTime(_time))
         self.soundProgress.duration = _time
         self.horizontalSlider.setMaximum(_time)
-        self.pushButton.setText(self.playOrPausedIcon[1])
-        self.label.setText(self.selected_song)
+        self.playSongButton.setText(self.playOrPausedIcon[1])
+        self.musicName.setText(self.selected_song)
         self.horizontalSlider.setValue(0)
 
         self.start()
 
     def soundUnReady(self):
-        self.pushButton.setEnabled(False)
+        self.playSongButton.setEnabled(False)
         self.horizontalSlider.setEnabled(False)
         self.loopIcon.setEnabled(False)
 
-        self.label_2.setText('00:00')
+        self.musicDuration.setText('00:00')
         self.soundProgress.duration = 1
         self.horizontalSlider.setMaximum(1)
-        self.pushButton.setText(self.playOrPausedIcon[1])
-        self.label.setText('')
+        self.playSongButton.setText(self.playOrPausedIcon[1])
+        self.musicName.setText('')
         self.horizontalSlider.setValue(0)
 
     def onMouseOver(self, name, elem, event):
@@ -164,11 +164,14 @@ class Ui_MainWindow(object):
     def onLeaveBar(self):
         self.barIsSelected = False
 
-    def closeEvent(self, _close_, event):
-        if not _close_:
-            self.window.hide()
-            event.ignore()
-        else:
+    def closeEvent(self, event):
+        try :
+            if self.currentSound.player.state() == QMediaPlayer.PlayingState:
+                self.window.hide()
+                event.ignore()
+            else:
+                event.accept()
+        except AttributeError:
             event.accept()
 
     def setupUi(self, MainWindow):
@@ -177,20 +180,20 @@ class Ui_MainWindow(object):
         MainWindow.setObjectName("MainWindow")
         MainWindow.resize(1024, 700)
         MainWindow.setFixedSize(1024, 700)
-        MainWindow.closeEvent = partial(self.closeEvent, False)
+        MainWindow.closeEvent = partial(self.closeEvent)
         self.centralwidget = QtWidgets.QWidget(MainWindow)
         self.centralwidget.setObjectName("centralwidget")
         self.scrollArea = QtWidgets.QScrollArea(self.centralwidget)
-        self.scrollArea.setGeometry(QtCore.QRect(10, 10, 251, 591))
+        self.scrollArea.setGeometry(QtCore.QRect(10, 280, 251, 410))
         self.scrollArea.setStyleSheet("background-color: #FFFFFF; border: 4px ridge black")
         self.scrollArea.setWidgetResizable(True)
         self.scrollArea.setObjectName("scrollArea")
         self.scrollAreaWidgetContents = QtWidgets.QWidget()
-        self.scrollAreaWidgetContents.setGeometry(QtCore.QRect(0, 0, 249, 589))
+        self.scrollAreaWidgetContents.setGeometry(QtCore.QRect(0, 0, 249, 410))
         self.scrollAreaWidgetContents.setStyleSheet("background-color: #FFFFFF; border: none")
         self.scrollAreaWidgetContents.setObjectName("scrollAreaWidgetContents")
         self.verticalLayoutWidget = QtWidgets.QWidget(self.scrollAreaWidgetContents)
-        self.verticalLayoutWidget.setGeometry(QtCore.QRect(0, 0, 251, 591))
+        self.verticalLayoutWidget.setGeometry(QtCore.QRect(0, 0, 251, 410))
         self.verticalLayoutWidget.setObjectName("verticalLayoutWidget")
         self.verticalLayout = QtWidgets.QVBoxLayout(self.verticalLayoutWidget)
         self.verticalLayout.setContentsMargins(0, 0, 0, 0)
@@ -198,35 +201,24 @@ class Ui_MainWindow(object):
         self.verticalLayout.setAlignment(QtCore.Qt.AlignTop)
         self.scrollArea.setWidget(self.scrollAreaWidgetContents)
         self.widget = QtWidgets.QWidget(self.centralwidget)
-        self.widget.setGeometry(QtCore.QRect(290, 330, 561, 271))
+        self.widget.setGeometry(QtCore.QRect(290, 280, 561, 410))
         self.widget.setStyleSheet("background-color: #FFFFFF; border: 4px ridge black; border-radius: 10px")
         self.widget.setObjectName("widget")
-        self.label_2 = QtWidgets.QLabel(self.widget)
-        self.label_2.setGeometry(QtCore.QRect(510, 110, 31, 16))
-        self.label_2.setObjectName("label_2")
-        self.label_2.setStyleSheet("border: none")
-        self.pushButton = QtWidgets.QPushButton(self.widget)
-        self.pushButton.setEnabled(False)
-        self.pushButton.setGeometry(QtCore.QRect(220, 180, 111, 81))
-        self.pushButton.setStyleSheet("border: none")
-        font = QtGui.QFont()
-        font.setPointSize(16)
-        self.pushButton.setFont(font)
-        self.pushButton.setStyleSheet("border: 1px solid;\n"
-"border-radius: 10px;")
-        self.pushButton.clicked.connect(self.pauseOrPlay)
-        self.pushButton.setObjectName("pushButton")
-        self.label = QtWidgets.QLabel(self.widget)
-        self.label.setGeometry(QtCore.QRect(10, 40, 531, 51))
-        self.label.setLayoutDirection(QtCore.Qt.LeftToRight)
-        self.label.setStyleSheet("color: rgb(150, 74, 255);\n"
+        self.discPicture = QtWidgets.QLabel(self.widget)
+        self.discPicture.setGeometry(150, 10, 250, 200)
+        self.discPicture.setPixmap(QtGui.QPixmap('assets/discPicture.jpg'))
+        self.discPicture.setScaledContents(True)
+        self.musicName = QtWidgets.QLabel(self.widget)
+        self.musicName.setGeometry(QtCore.QRect(10, 210, 531, 51))
+        self.musicName.setLayoutDirection(QtCore.Qt.LeftToRight)
+        self.musicName.setStyleSheet("color: rgb(150, 74, 255);\n"
 "font: 87 11pt \"Arial Black\"; border: none")
-        self.label.setTextFormat(QtCore.Qt.AutoText)
-        self.label.setAlignment(QtCore.Qt.AlignCenter)
-        self.label.setObjectName("label")
+        self.musicName.setTextFormat(QtCore.Qt.AutoText)
+        self.musicName.setAlignment(QtCore.Qt.AlignCenter)
+        self.musicName.setObjectName("musicName")
         self.horizontalSlider = QtWidgets.QSlider(self.widget)
         self.horizontalSlider.setEnabled(False)
-        self.horizontalSlider.setGeometry(QtCore.QRect(10, 110, 491, 22))
+        self.horizontalSlider.setGeometry(QtCore.QRect(10, 280, 491, 22))
         self.horizontalSlider.setMaximum(100)
         self.horizontalSlider.setProperty("value", 0)
         self.horizontalSlider.setStyleSheet("border: none")
@@ -235,18 +227,30 @@ class Ui_MainWindow(object):
         self.horizontalSlider.sliderPressed.connect(self.onPressBar)
         self.horizontalSlider.sliderMoved.connect(self.onDragBar)
         self.horizontalSlider.sliderReleased.connect(self.onLeaveBar)
+        self.musicDuration = QtWidgets.QLabel(self.widget)
+        self.musicDuration.setGeometry(QtCore.QRect(510, 280, 31, 16))
+        self.musicDuration.setObjectName("musicDuration")
+        self.musicDuration.setStyleSheet("border: none")
         self.loopIcon = QtWidgets.QLabel(self.widget)
-        self.loopIcon.setGeometry(QtCore.QRect(510, 150, 31, 20))
+        self.loopIcon.setGeometry(QtCore.QRect(510, 310, 31, 20))
         self.loopIcon.setObjectName("loopIcon")
         self.loopIcon.setStyleSheet("border: none; color: #000000")
         self.loopIcon.enterEvent = partial(self.onMouseOver, 'loopIcon', self.loopIcon)
         self.loopIcon.leaveEvent = partial(self.onMouseLeave, 'loopIcon', self.loopIcon)
         self.loopIcon.mousePressEvent = partial(self.onMousePress, 'loopIcon', self.loopIcon)
         self.loopIcon.setFont(QtGui.QFont('Arial', 15))
+        self.playSongButton = QtWidgets.QPushButton(self.widget)
+        self.playSongButton.setEnabled(False)
+        self.playSongButton.setGeometry(QtCore.QRect(240, 340, 80, 40))
+        self.playSongButton.setStyleSheet("border: none")
+        font = QtGui.QFont()
+        font.setPointSize(16)
+        self.playSongButton.setFont(font)
+        self.playSongButton.setStyleSheet("border: 1px solid;\n"
+"border-radius: 10px;")
+        self.playSongButton.clicked.connect(self.pauseOrPlay)
+        self.playSongButton.setObjectName("playSongButton")
         MainWindow.setCentralWidget(self.centralwidget)
-        self.statusbar = QtWidgets.QStatusBar(MainWindow)
-        self.statusbar.setObjectName("statusbar")
-        MainWindow.setStatusBar(self.statusbar)
 
 
         self.retranslateUi(MainWindow)
@@ -258,7 +262,7 @@ class Ui_MainWindow(object):
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
         MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow"))
-        self.label_2.setText(_translate("MainWindow", "00:00"))
+        self.musicDuration.setText(_translate("MainWindow", "00:00"))
         self.loopIcon.setText(_translate("MainWindow", "⟲"))
-        self.pushButton.setText(_translate("MainWindow", "►"))
-        self.label.setText(_translate("MainWindow", "Nothing selected"))
+        self.playSongButton.setText(_translate("MainWindow", "►"))
+        self.musicName.setText(_translate("MainWindow", "Nothing selected"))

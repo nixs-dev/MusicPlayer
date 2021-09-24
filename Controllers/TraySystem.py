@@ -15,16 +15,20 @@ class TraySystem(QSystemTrayIcon):
         self.setIcon(icon)
 
         menu = QMenu()
+        openPlayerWinow = menu.addAction('Open')
         quit = menu.addAction('Quit')
         nextSong = menu.addAction('Next')
         previousSong = menu.addAction('Previous')
 
+        openPlayerWinow.triggered.connect(partial(self.showWindow, window))
         nextSong.triggered.connect(partial(self.toNextSong))
         previousSong.triggered.connect(partial(self.toPreviousSong))
         quit.triggered.connect(partial(self.finishApplication, window, app))
 
         self.setContextMenu(menu)
 
+    def showWindow(self, window):
+        window.show()
 
     def toNextSong(self):
         currentSound = self.applicationClass.songs.index(self.applicationClass.selected_song)
