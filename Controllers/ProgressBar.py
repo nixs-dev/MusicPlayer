@@ -2,6 +2,7 @@ from PyQt5.QtCore import QThread, pyqtSignal
 from PyQt5.QtWidgets import (QApplication, QDialog,
                              QProgressBar, QPushButton)
 
+
 class ProgressBar(QThread):
     mode = 'toNext'
     threadSignal = pyqtSignal(int)
@@ -12,10 +13,12 @@ class ProgressBar(QThread):
     duration = 0
     position = 0
     
-    def __init__(self):
+    def __init__(self, player):
         super(ProgressBar, self).__init__()
 
-    def mainLoop(self):
+        self.player = player
+
+    def main_loop(self):
         while self.position < self.duration:
             if self.quit[0]:
                 break
@@ -31,10 +34,10 @@ class ProgressBar(QThread):
 
         self.position = self.player.position()/1000
         
-        self.mainLoop()
+        self.main_loop()
 
         if self.quit[1] == 'finished':
             self.finishedSignal.emit(self.mode)
             
-    def setPlayerPosition(self, pos):
+    def set_player_position(self, pos):
         self.player.setPosition(pos*1000)

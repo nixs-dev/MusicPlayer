@@ -13,8 +13,8 @@ from PyQt5.QtMultimedia import QMediaPlayer
 from Controllers.AudioPlayer import AudioPlayer as player
 from Controllers.Tools import Tools as tools
 from Controllers.ProgressBar import ProgressBar
+from Controllers.Styler import Styler
 from functools import partial
-import threading
 
 
 class Ui_MainWindow(object):
@@ -28,17 +28,17 @@ class Ui_MainWindow(object):
     repeat = False
     songs = []
 
-    def showSongs(self):
+    def show_songs(self):
         for song in self.songs:
             musicName = QtWidgets.QLabel(song)
             musicName.mousePressEvent = partial(self.selected_item, song)
-            musicName.enterEvent = partial(self.onMouseOver, "song", musicName)
-            musicName.leaveEvent = partial(self.onMouseLeave, "song", musicName)
+            musicName.enterEvent = partial(Styler.song_on_mouse_over, musicName)
+            musicName.leaveEvent = partial(Styler.song_on_mouse_leave, musicName)
             musicName.setStyleSheet("margin-left: 4px; border: none; color: #000000")
             musicName.setCursor(QtCore.Qt.PointingHandCursor)
             self.verticalLayout.addWidget(musicName)
 
-    def nextSong(self, actualSongIndex):
+    def next_song(self, actualSongIndex):
         try:
             _next = self.songs[actualSongIndex + 1]
         except:
@@ -46,7 +46,7 @@ class Ui_MainWindow(object):
 
         self.selected_item(_next, None)
 
-    def previousSong(self, actualSongIndex):
+    def previous_song(self, actualSongIndex):
         try:
             _previous = self.songs[actualSongIndex - 1]
         except:
@@ -60,59 +60,58 @@ class Ui_MainWindow(object):
         if self.currentSound == None:
             self.currentSound = player(self.selected_song)
         else:
-            self.currentSound.stop(self.currentSound)
+            self.currentSound.stop()
             self.currentSound = player(self.selected_song)
         
         if self.soundProgress is not None:
             self.soundProgress.quit = [True, 'changed']
 
-        self.configPlayer()
-        self.soundUnReady()
+        self.config_player()
+        self.sound_unready()
 
-    def configPlayer(self):
-        self.soundProgress = ProgressBar()
-        self.soundProgress.player = self.currentSound.player
+    def config_player(self):
+        self.soundProgress = ProgressBar(self.currentSound)
         self.soundProgress.mode = 'repeat' if self.repeat else 'toNext'
-        self.soundProgress.threadSignal.connect(self.updateProgressBar)
-        self.soundProgress.setDurationSignal.connect(self.soundReady)
-        self.soundProgress.finishedSignal.connect(self.songFinished)
+        self.soundProgress.threadSignal.connect(self.update_progress_bar)
+        self.soundProgress.setDurationSignal.connect(self.sound_ready)
+        self.soundProgress.finishedSignal.connect(self.song_finished)
         self.soundProgress.start()
         self.soundProgress.exec()
 
     def start(self):
-        self.currentSound.play(self.currentSound)
+        self.currentSound.play()
         self.playSongButton.setText(self.playOrPausedIcon[0])
 
-    def pauseOrPlay(self):
-        if self.currentSound.player.state() == QMediaPlayer.PlayingState:
-            self.currentSound.pause(self.currentSound)
+    def pause_or_play(self):
+        if self.currentSound.state() == QMediaPlayer.PlayingState:
+            self.currentSound.pause()
             self.playSongButton.setText(self.playOrPausedIcon[1])
         else:
-            self.currentSound.play(self.currentSound)
+            self.currentSound.play()
             self.playSongButton.setText(self.playOrPausedIcon[0])
 
-    def songFinished(self, typeFinish):
+    def song_finished(self, typeFinish):
         self.playSongButton.setText(self.playOrPausedIcon[1])
-        self.currentSound.player.setPosition(0)
+        self.currentSound.setPosition(0)
         self.horizontalSlider.setValue(0)
-        self.currentSound.stop(self.currentSound)
+        self.currentSound.stop()
 
         print(typeFinish)
         if typeFinish == 'toNext':
-            self.nextSong(self.songs.index(self.selected_song))
+            self.next_song(self.songs.index(self.selected_song))
         elif typeFinish == 'repeat':
             self.selected_item(self.selected_song, None)
 
-    def updateProgressBar(self, value):
+    def update_progress_bar(self, value):
         if not self.barIsSelected:
             self.horizontalSlider.setValue(value)
 
-    def soundReady(self, _time):
+    def sound_ready(self, _time):
         self.playSongButton.setEnabled(True)
         self.horizontalSlider.setEnabled(True)
         self.loopIcon.setEnabled(True)
 
-        self.musicDuration.setText(tools.numberToTime(_time))
+        self.musicDuration.setText(tools.number_to_time(_time))
         self.soundProgress.duration = _time
         self.horizontalSlider.setMaximum(_time)
         self.playSongButton.setText(self.playOrPausedIcon[1])
@@ -121,7 +120,7 @@ class Ui_MainWindow(object):
 
         self.start()
 
-    def soundUnReady(self):
+    def sound_unready(self):
         self.playSongButton.setEnabled(False)
         self.horizontalSlider.setEnabled(False)
         self.loopIcon.setEnabled(False)
@@ -133,40 +132,25 @@ class Ui_MainWindow(object):
         self.musicName.setText('')
         self.horizontalSlider.setValue(0)
 
-    def onMouseOver(self, name, elem, event):
-        if name == "song":
-            elem.setStyleSheet("margin-left: 4px; border: none; color: #0000FF")
-        elif name == "loopIcon":
-            elem.setStyleSheet("border: none; color: #0000FF")
-
-    def onMouseLeave(self, name, elem, event):
-        if name == "song":
-            elem.setStyleSheet("margin-left: 4px; border: none; color: #000000")
-        elif name == "loopIcon":
-            if not self.repeat:
-                elem.setStyleSheet("border: none; color: #000000")
-
-    def onMousePress(self, name, elem, event):
+    def on_mouse_press(self, name, elem, event):
         if name == "loopIcon":
             self.repeat = True if not self.repeat else False
-            try:
-                self.soundProgress.mode = 'repeat' if self.repeat else 'toNext'
-            except:
-                pass
+            elem.setStyleSheet("border: none; color: #0000FF")
+            self.soundProgress.mode = 'repeat' if self.repeat else 'toNext'
     
-    def onPressBar(self):
+    def on_press_bar(self):
         self.barIsSelected = True
 
-    def onDragBar(self, pos):
+    def on_drag_bar(self, pos):
         self.barIsSelected = True
-        self.soundProgress.setPlayerPosition(pos)
+        self.soundProgress.set_player_position(pos)
 
-    def onLeaveBar(self):
+    def on_leave_bar(self):
         self.barIsSelected = False
 
-    def closeEvent(self, event):
-        try :
-            if self.currentSound.player.state() == QMediaPlayer.PlayingState:
+    def close_event(self, event):
+        try:
+            if self.currentSound.state() == QMediaPlayer.PlayingState:
                 self.window.hide()
                 event.ignore()
             else:
@@ -180,7 +164,7 @@ class Ui_MainWindow(object):
         MainWindow.setObjectName("MainWindow")
         MainWindow.resize(1024, 700)
         MainWindow.setFixedSize(1024, 700)
-        MainWindow.closeEvent = partial(self.closeEvent)
+        MainWindow.closeEvent = partial(self.close_event)
         self.centralwidget = QtWidgets.QWidget(MainWindow)
         self.centralwidget.setObjectName("centralwidget")
         self.scrollArea = QtWidgets.QScrollArea(self.centralwidget)
@@ -224,20 +208,21 @@ class Ui_MainWindow(object):
         self.horizontalSlider.setStyleSheet("border: none")
         self.horizontalSlider.setOrientation(QtCore.Qt.Horizontal)
         self.horizontalSlider.setObjectName("horizontalSlider")
-        self.horizontalSlider.sliderPressed.connect(self.onPressBar)
-        self.horizontalSlider.sliderMoved.connect(self.onDragBar)
-        self.horizontalSlider.sliderReleased.connect(self.onLeaveBar)
+        self.horizontalSlider.sliderPressed.connect(self.on_press_bar)
+        self.horizontalSlider.sliderMoved.connect(self.on_drag_bar)
+        self.horizontalSlider.sliderReleased.connect(self.on_leave_bar)
         self.musicDuration = QtWidgets.QLabel(self.widget)
         self.musicDuration.setGeometry(QtCore.QRect(510, 280, 31, 16))
         self.musicDuration.setObjectName("musicDuration")
         self.musicDuration.setStyleSheet("border: none")
         self.loopIcon = QtWidgets.QLabel(self.widget)
+        self.loopIcon.setEnabled(False)
         self.loopIcon.setGeometry(QtCore.QRect(510, 310, 31, 20))
         self.loopIcon.setObjectName("loopIcon")
         self.loopIcon.setStyleSheet("border: none; color: #000000")
-        self.loopIcon.enterEvent = partial(self.onMouseOver, 'loopIcon', self.loopIcon)
-        self.loopIcon.leaveEvent = partial(self.onMouseLeave, 'loopIcon', self.loopIcon)
-        self.loopIcon.mousePressEvent = partial(self.onMousePress, 'loopIcon', self.loopIcon)
+        self.loopIcon.enterEvent = partial(Styler.loop_on_mouse_over, self.loopIcon, self.repeat)
+        self.loopIcon.leaveEvent = partial(Styler.loop_on_mouse_leave, self.loopIcon, self.repeat)
+        self.loopIcon.mousePressEvent = partial(self.on_mouse_press, 'loopIcon', self.loopIcon)
         self.loopIcon.setFont(QtGui.QFont('Arial', 15))
         self.playSongButton = QtWidgets.QPushButton(self.widget)
         self.playSongButton.setEnabled(False)
@@ -246,9 +231,9 @@ class Ui_MainWindow(object):
         font = QtGui.QFont()
         font.setPointSize(16)
         self.playSongButton.setFont(font)
-        self.playSongButton.setStyleSheet("border: 1px solid;\n"
+        self.playSongButton.setStyleSheet("color: #000000;border: 1px solid;\n"
 "border-radius: 10px;")
-        self.playSongButton.clicked.connect(self.pauseOrPlay)
+        self.playSongButton.clicked.connect(self.pause_or_play)
         self.playSongButton.setObjectName("playSongButton")
         MainWindow.setCentralWidget(self.centralwidget)
 
@@ -256,8 +241,8 @@ class Ui_MainWindow(object):
         self.retranslateUi(MainWindow)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
-        self.songs = tools.getSongs()
-        self.showSongs() 
+        self.songs = tools.get_songs()
+        self.show_songs()
 
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate

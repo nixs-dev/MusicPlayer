@@ -1,13 +1,7 @@
 import sys
-import os
-import PySide2
-from PyQt5 import QtCore, QtGui, QtWidgets
-from PyQt5.QtMultimedia import QMediaPlayer
-from MainWindow import Ui_MainWindow
+from PyQt5 import QtWidgets
+from views.Main import Ui_MainWindow
 from Controllers.TraySystem import TraySystem
-from Controllers.Tools import Tools as tools
-
-tools.configSongsPath()
 
 
 windowStyle = """

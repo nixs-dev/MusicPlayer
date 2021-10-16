@@ -7,9 +7,9 @@ class TraySystem(QSystemTrayIcon):
 
     applicationClass = None
 
-    def __init__(self, window, applicationClass, app):
+    def __init__(self, window, application_class, app):
         super().__init__(window)
-        self.applicationClass = applicationClass
+        self.applicationClass = application_class
 
         icon = QIcon("assets/icon.png")
         self.setIcon(icon)
@@ -32,11 +32,11 @@ class TraySystem(QSystemTrayIcon):
 
     def toNextSong(self):
         currentSound = self.applicationClass.songs.index(self.applicationClass.selected_song)
-        self.applicationClass.nextSong(currentSound)
+        self.applicationClass.next_song(currentSound)
 
     def toPreviousSong(self):
         currentSound = self.applicationClass.songs.index(self.applicationClass.selected_song)
-        self.applicationClass.previousSong(currentSound)
+        self.applicationClass.previous_song(currentSound)
 
     def finishApplication(self, window, app):
         app.quit()
