@@ -4,13 +4,19 @@ import math
 
 class Tools:
 
+    allowed_formats = ['mp3']
     default_songs_path = '/songs'
     appPath = os.getcwd().replace('/Tools', '')
 
+    @staticmethod
     def get_songs():
-        songs = os.listdir(Tools.appPath + Tools.default_songs_path)
+        songs = []
+        for song in os.listdir(Tools.appPath + Tools.default_songs_path):
+            if song.split('.')[-1] in Tools.allowed_formats:
+                songs.append(song)
         return songs
 
+    @staticmethod
     def number_to_time(num):
         if num > 60:
             mins = math.floor(num/60)

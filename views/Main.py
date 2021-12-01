@@ -58,10 +58,10 @@ class Ui_MainWindow(object):
         self.selected_song = text
 
         if self.currentSound == None:
-            self.currentSound = player(self.selected_song)
+            self.currentSound = player(self.selected_song, self.musicVolume.value())
         else:
             self.currentSound.stop()
-            self.currentSound = player(self.selected_song)
+            self.currentSound = player(self.selected_song, self.musicVolume.value())
         
         if self.soundProgress is not None:
             self.soundProgress.quit = [True, 'changed']
@@ -96,7 +96,6 @@ class Ui_MainWindow(object):
         self.horizontalSlider.setValue(0)
         self.currentSound.stop()
 
-        print(typeFinish)
         if typeFinish == 'toNext':
             self.next_song(self.songs.index(self.selected_song))
         elif typeFinish == 'repeat':
@@ -110,6 +109,7 @@ class Ui_MainWindow(object):
         self.playSongButton.setEnabled(True)
         self.horizontalSlider.setEnabled(True)
         self.loopIcon.setEnabled(True)
+        self.musicVolume.setEnabled(True)
 
         self.musicDuration.setText(tools.number_to_time(_time))
         self.soundProgress.duration = _time
@@ -124,6 +124,7 @@ class Ui_MainWindow(object):
         self.playSongButton.setEnabled(False)
         self.horizontalSlider.setEnabled(False)
         self.loopIcon.setEnabled(False)
+        self.musicVolume.setEnabled(False)
 
         self.musicDuration.setText('00:00')
         self.soundProgress.duration = 1
@@ -158,6 +159,17 @@ class Ui_MainWindow(object):
         except AttributeError:
             event.accept()
 
+    def on_volume_bar_drag(self, value):
+        self.currentSound.setVolume(value)
+
+    def load_background(self):
+        image_background = QtGui.QImage("assets/background.jpg")
+
+        scaled_image = image_background.scaled(QtCore.QSize(1034, 700))
+        palette = QtGui.QPalette()
+        palette.setBrush(10, QtGui.QBrush(scaled_image))
+        self.window.setPalette(palette)
+
     def setupUi(self, MainWindow):
         self.window = MainWindow
 
@@ -185,7 +197,7 @@ class Ui_MainWindow(object):
         self.verticalLayout.setAlignment(QtCore.Qt.AlignTop)
         self.scrollArea.setWidget(self.scrollAreaWidgetContents)
         self.widget = QtWidgets.QWidget(self.centralwidget)
-        self.widget.setGeometry(QtCore.QRect(290, 280, 561, 410))
+        self.widget.setGeometry(QtCore.QRect(400, 280, 561, 410))
         self.widget.setStyleSheet("background-color: #FFFFFF; border: 4px ridge black; border-radius: 10px")
         self.widget.setObjectName("widget")
         self.discPicture = QtWidgets.QLabel(self.widget)
@@ -200,6 +212,13 @@ class Ui_MainWindow(object):
         self.musicName.setTextFormat(QtCore.Qt.AutoText)
         self.musicName.setAlignment(QtCore.Qt.AlignCenter)
         self.musicName.setObjectName("musicName")
+        self.musicVolume = QtWidgets.QSlider(QtCore.Qt.Vertical, self.widget)
+        self.musicVolume.setEnabled(False)
+        self.musicVolume.setMaximum(100)
+        self.musicVolume.setValue(50)
+        self.musicVolume.setGeometry(QtCore.QRect(20, 150, 10, 100))
+        self.musicVolume.setStyleSheet('background-color: None; border: None')
+        self.musicVolume.sliderMoved.connect(self.on_volume_bar_drag)
         self.horizontalSlider = QtWidgets.QSlider(self.widget)
         self.horizontalSlider.setEnabled(False)
         self.horizontalSlider.setGeometry(QtCore.QRect(10, 280, 491, 22))
@@ -213,8 +232,8 @@ class Ui_MainWindow(object):
         self.horizontalSlider.sliderReleased.connect(self.on_leave_bar)
         self.musicDuration = QtWidgets.QLabel(self.widget)
         self.musicDuration.setGeometry(QtCore.QRect(510, 280, 31, 16))
+        self.musicDuration.setStyleSheet("color: #000000; border: none")
         self.musicDuration.setObjectName("musicDuration")
-        self.musicDuration.setStyleSheet("border: none")
         self.loopIcon = QtWidgets.QLabel(self.widget)
         self.loopIcon.setEnabled(False)
         self.loopIcon.setGeometry(QtCore.QRect(510, 310, 31, 20))
@@ -241,6 +260,7 @@ class Ui_MainWindow(object):
         self.retranslateUi(MainWindow)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
+        self.load_background()
         self.songs = tools.get_songs()
         self.show_songs()
 

@@ -7,11 +7,12 @@ class AudioPlayer(M.QMediaPlayer):
     song = ''
     player = None
 
-    def __init__(self, song):
+    def __init__(self, song, volume_value):
         super().__init__()
         self.song = song
 
         url = C.QUrl.fromLocalFile(self.prefixPath + self.song)
         content = M.QMediaContent(url)
         self.setMedia(content)
+        self.setVolume(volume_value)
 
